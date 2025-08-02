@@ -20,7 +20,7 @@ export async function logActivity(
     await addDoc(activityLogsCollection, {
       action,
       description,
-      details: details || null,
+      details: details || {},
       createdAt: serverTimestamp(),
     });
   } catch (error) {

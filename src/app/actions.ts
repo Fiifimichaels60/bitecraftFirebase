@@ -4,6 +4,8 @@
 import { suggestPromotions, type SuggestPromotionsInput } from '@/ai/flows/suggest-promotions';
 import { z } from 'zod';
 import { logActivity } from '@/services/activityLogService';
+import { headers } from 'next/headers';
+
 
 const formSchema = z.object({
   location: z.string().min(2, { message: 'Location must be at least 2 characters.' }),
@@ -44,6 +46,7 @@ export async function logPageView(pathname: string) {
     // Avoid logging admin page views this way for now to reduce noise.
     // A more robust solution could filter based on user roles.
     if (!pathname.startsWith('/admin')) {
-        await logActivity('page_view', `Visitor viewed page: ${pathname}`);
+        const ip = headers().get('x-forwarded-for') ?? 'Unknown';
+        await logActivity('page_view', `Visitor viewed page: ${pathname}`, { ip });
     }
 }

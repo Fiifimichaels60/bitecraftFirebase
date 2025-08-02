@@ -13,7 +13,7 @@ export async function getMenuItems(): Promise<FoodItem[]> {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as FoodItem));
 }
 
-export async function addMenuItem(item: Omit<FoodItem, 'id' | 'image'>, image: File | string): Promise<void> {
+export async function addMenuItem(item: Omit<FoodItem, 'id' | 'image'>, image: File | string, adminEmail?: string): Promise<void> {
   let imageURL: string;
 
   if (typeof image === 'string') {
@@ -23,10 +23,10 @@ export async function addMenuItem(item: Omit<FoodItem, 'id' | 'image'>, image: F
   }
   
   const docRef = await addDoc(menuItemsCollection, { ...item, image: imageURL });
-  await logActivity('admin_action', `Added menu item: "${item.name}"`, { menuItemId: docRef.id });
+  await logActivity('admin_action', `Added menu item: "${item.name}"`, { menuItemId: docRef.id, adminEmail });
 }
 
-export async function updateMenuItem(id: string, item: Omit<FoodItem, 'id' | 'image'>, image?: File | string): Promise<void> {
+export async function updateMenuItem(id: string, item: Omit<FoodItem, 'id' | 'image'>, adminEmail?: string, image?: File | string): Promise<void> {
     const menuItemDoc = doc(db, 'menuItems', id);
     let imageURL;
 
@@ -40,10 +40,10 @@ export async function updateMenuItem(id: string, item: Omit<FoodItem, 'id' | 'im
     } else {
         await updateDoc(menuItemDoc, item);
     }
-    await logActivity('admin_action', `Updated menu item: "${item.name}"`, { menuItemId: id });
+    await logActivity('admin_action', `Updated menu item: "${item.name}"`, { menuItemId: id, adminEmail });
 }
 
-export async function deleteMenuItem(id: string, imageUrl: string): Promise<void> {
+export async function deleteMenuItem(id: string, imageUrl: string, adminEmail?: string): Promise<void> {
     const menuItemDoc = doc(db, 'menuItems', id);
     await deleteDoc(menuItemDoc);
 
@@ -53,11 +53,10 @@ export async function deleteMenuItem(id: string, imageUrl: string): Promise<void
             const imageRef = ref(storage, imageUrl);
             await deleteObject(imageRef);
         } catch (error) {
-            // It's okay if the image doesn't exist or deletion fails. Log and continue.
             console.error("Failed to delete image from storage:", error);
         }
     }
-    await logActivity('admin_action', `Deleted a menu item`, { menuItemId: id });
+    await logActivity('admin_action', `Deleted a menu item`, { menuItemId: id, adminEmail });
 }
 
 

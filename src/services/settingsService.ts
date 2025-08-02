@@ -1,3 +1,4 @@
+
 // services/settingsService.ts
 
 import { db } from '@/lib/firebase';
@@ -70,7 +71,7 @@ export async function getSettings(): Promise<AppSettings> {
  * Creates the document if it doesn't exist.
  * Logs the fields that were updated.
  */
-export async function updateSettings(settings: Partial<AppSettings>): Promise<void> {
+export async function updateSettings(settings: Partial<AppSettings>, adminEmail?: string): Promise<void> {
   try {
     const docSnap = await getDoc(settingsDocRef);
 
@@ -84,7 +85,7 @@ export async function updateSettings(settings: Partial<AppSettings>): Promise<vo
     await logActivity(
       'admin_action',
       `Updated app settings: ${updatedFields}`,
-      { settings }
+      { settings, adminEmail }
     );
   } catch (error) {
     console.error('Failed to update settings:', error);

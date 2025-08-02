@@ -76,8 +76,8 @@ export async function getVisitors(): Promise<Visitor[]> {
     });
 }
   
-export async function deleteVisitor(id: string): Promise<void> {
+export async function deleteVisitor(id: string, adminEmail?: string): Promise<void> {
     const visitorDoc = doc(db, 'visitors', id);
     await deleteDoc(visitorDoc);
-    await logActivity('admin_action', `Deleted a visitor`, { visitorId: id });
+    await logActivity('admin_action', `Deleted a visitor`, { visitorId: id, adminEmail });
 }

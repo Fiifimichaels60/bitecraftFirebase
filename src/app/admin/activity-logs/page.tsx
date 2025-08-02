@@ -57,6 +57,16 @@ export default function ActivityLogsPage() {
             default: return null;
         }
     }
+    
+    const getActorInfo = (log: ActivityLog) => {
+        if (log.action === 'admin_action') {
+            return log.details?.adminEmail || 'N/A';
+        }
+        if (log.action === 'page_view') {
+            return log.details?.ip || 'N/A';
+        }
+        return 'System';
+    }
 
   return (
     <Card>
@@ -78,6 +88,7 @@ export default function ActivityLogsPage() {
                 <TableHeader>
                     <TableRow>
                         <TableHead className="w-[120px]">Type</TableHead>
+                        <TableHead>Actor</TableHead>
                         <TableHead>Description</TableHead>
                         <TableHead className="text-right w-[200px]">Timestamp</TableHead>
                     </TableRow>
@@ -91,6 +102,7 @@ export default function ActivityLogsPage() {
                                     {log.action === 'admin_action' ? 'Admin' : 'Visitor'}
                                 </Badge>
                             </TableCell>
+                            <TableCell className="font-mono text-xs">{getActorInfo(log)}</TableCell>
                             <TableCell className="font-medium">{log.description}</TableCell>
                             <TableCell className="text-right text-muted-foreground">{format(log.createdAt, 'PPpp')}</TableCell>
                         </TableRow>

@@ -39,15 +39,26 @@ async function getUserIdFromSession(sessionCookie: string | undefined | null) {
     }
 }
 
-export async function updateProfile(prevState: any, formData: FormData) {
-    // This action relies on middleware to pass the session.
-    // As it doesn't handle file uploads, this approach is fine.
+async function getAuthenticatedAdmin() {
     const sessionCookie = require('next/headers').headers().get('x-session');
     const uid = await getUserIdFromSession(sessionCookie);
+    if (!uid) return null;
 
-    if (!uid) {
+    try {
+        const user = await getAuth(adminApp).getUser(uid);
+        return { uid, email: user.email };
+    } catch (error) {
+        return null;
+    }
+}
+
+
+export async function updateProfile(prevState: any, formData: FormData) {
+    const adminUser = await getAuthenticatedAdmin();
+    if (!adminUser) {
         return { message: 'Authentication required.', error: true };
     }
+    const { uid, email: adminEmail } = adminUser;
 
     const rawData = Object.fromEntries(formData.entries());
     const validatedFields = profileSchema.safeParse(rawData);
@@ -64,7 +75,7 @@ export async function updateProfile(prevState: any, formData: FormData) {
 
     try {
         await updateUserEmail(uid, email);
-        await logActivity('admin_action', 'Admin updated their email.', { adminId: uid });
+        await logActivity('admin_action', `Admin updated their email.`, { adminEmail });
         
         revalidatePath('/admin/profile');
         revalidatePath('/admin');
@@ -91,8 +102,9 @@ export async function updateProfilePicture(formData: FormData, sessionToken: str
     const { profilePicture } = validatedFields.data;
 
     try {
+        const user = await getAuth(adminApp).getUser(uid);
         await updateUserPfp(uid, profilePicture);
-        await logActivity('admin_action', 'Admin updated their profile picture.', { adminId: uid });
+        await logActivity('admin_action', 'Admin updated their profile picture.', { adminEmail: user.email });
 
         revalidatePath('/admin/profile', 'layout');
         
@@ -106,11 +118,11 @@ export async function updateProfilePicture(formData: FormData, sessionToken: str
 
 
 export async function updatePassword(prevState: any, formData: FormData) {
-    const sessionCookie = require('next/headers').headers().get('x-session');
-    const uid = await getUserIdFromSession(sessionCookie);
-    if (!uid) {
+    const adminUser = await getAuthenticatedAdmin();
+    if (!adminUser) {
       return { message: 'Authentication required.', error: true };
     }
+    const { uid, email: adminEmail } = adminUser;
 
     try {
         const rawData = Object.fromEntries(formData.entries());
@@ -121,7 +133,7 @@ export async function updatePassword(prevState: any, formData: FormData) {
         }
 
         await updateUserPassword(uid, validatedFields.data.newPassword);
-        await logActivity('admin_action', 'Admin updated their password.', { adminId: uid });
+        await logActivity('admin_action', 'Admin updated their password.', { adminEmail });
         
         return { message: 'Password updated successfully.', error: false };
     } catch (error: any) {
