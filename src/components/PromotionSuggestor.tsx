@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useActionState } from 'react';
+import { useState, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
 import { handleSuggestPromotions } from '@/app/actions';
 import { Button } from '@/components/ui/button';
@@ -31,8 +32,16 @@ function SubmitButton() {
 }
 
 export function PromotionSuggestor() {
-  const [state, formAction] = useActionState(handleSuggestPromotions, initialState);
+  const [state, setState] = useState(initialState);
+  const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+
+  const action = (formData: FormData) => {
+    startTransition(async () => {
+      const result = await handleSuggestPromotions(null, formData);
+      setState(result);
+    });
+  }
 
   useEffect(() => {
     if (state.message && state.error) {
@@ -56,12 +65,13 @@ export function PromotionSuggestor() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="space-y-4">
+        <form action={action} className="space-y-4">
           <div className="flex gap-2">
             <Input
               name="location"
               placeholder="e.g., Accra, Kumasi"
               required
+              disabled={isPending}
             />
             <SubmitButton />
           </div>
