@@ -53,4 +53,7 @@ export {
     ChefHat,
     ArrowRight,
     User as UserIcon,
+    MessageSquare,
+    Star,
+    MailOpen,
 } from 'lucide-react';

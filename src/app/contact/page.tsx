@@ -1,8 +1,10 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { useTransition } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -17,28 +19,48 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mail, MapPin, Phone } from 'lucide-react';
+import { Loader2, Mail, MapPin, Phone } from 'lucide-react';
+import { handleContactUs } from './actions';
 
 const contactFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
-  email: z.string().email('Please enter a valid email address.'),
+  phone: z.string().min(10, 'Please enter a valid phone number.'),
+  location: z.string().min(2, 'Location is required.'),
   message: z.string().min(10, 'Message must be at least 10 characters.'),
 });
 
 type ContactFormValues = z.infer<typeof contactFormSchema>;
 
 export default function ContactPage() {
+  const [isPending, startTransition] = useTransition();
+
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
+    defaultValues: {
+      name: '',
+      phone: '',
+      location: '',
+      message: '',
+    }
   });
 
   function onSubmit(data: ContactFormValues) {
-    console.log(data);
-    toast({
-      title: 'Message Sent!',
-      description: 'Thank you for contacting us. We will get back to you shortly.',
+    startTransition(async () => {
+      const result = await handleContactUs(data);
+      if (result.error) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: result.message,
+        });
+      } else {
+        toast({
+          title: 'Message Sent!',
+          description: 'Thank you for contacting us. We will get back to you shortly.',
+        });
+        form.reset();
+      }
     });
-    form.reset({ name: '', email: '', message: '' });
   }
   
   return (
@@ -105,12 +127,25 @@ export default function ContactPage() {
                   />
                   <FormField
                     control={form.control}
-                    name="email"
+                    name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Your Email</FormLabel>
+                        <FormLabel>Phone Number</FormLabel>
                         <FormControl>
-                          <Input placeholder="you@example.com" {...field} />
+                          <Input placeholder="024 123 4567" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Your Location</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Takoradi" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -133,7 +168,10 @@ export default function ContactPage() {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" size="lg">Send Message</Button>
+                  <Button type="submit" size="lg" disabled={isPending}>
+                    {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Send Message
+                  </Button>
                 </form>
               </Form>
             </CardContent>

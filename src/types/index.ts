@@ -1,5 +1,4 @@
 
-
 export type FoodItem = {
   id: string;
   name: string;
@@ -89,3 +88,20 @@ export type Visitor = {
     email: string;
     createdAt: Date;
 };
+
+export type Message = {
+    id: string;
+    name: string;
+    phone: string;
+    location: string;
+    message: string;
+    isRead: boolean;
+    createdAt: Date;
+}
+
+export type Rating = {
+    id: string;
+    rating: number;
+    comment?: string;
+    createdAt: Date;
+}

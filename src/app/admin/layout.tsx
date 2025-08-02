@@ -15,6 +15,8 @@ import {
   Settings,
   Menu,
   User as UserIcon,
+  MessageSquare,
+  Star,
 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthProvider';
@@ -107,6 +109,8 @@ function AdminNav() {
     { href: '/admin/menu-items', label: 'Menu Items', icon: Package },
     { href: '/admin/customers', label: 'Customers', icon: Users },
     { href: '/admin/visitors', label: 'Visitors', icon: Users },
+    { href: '/admin/messages', label: 'Messages', icon: MessageSquare },
+    { href: '/admin/ratings', label: 'Ratings', icon: Star },
     { href: '/admin/analytics', label: 'Analytics', icon: LineChart },
     { href: '/admin/payments', label: 'Payments', icon: CreditCard },
     { href: '/admin/activity-logs', label: 'Activity Logs', icon: Activity },
