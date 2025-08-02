@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/input';
 import { useCart } from '@/contexts/CartProvider';
 import { toast } from '@/hooks/use-toast';
 import { handleCheckout } from './actions';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CreditCard } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -189,7 +189,12 @@ export function CheckoutForm({ total, deliveryMethod }: CheckoutFormProps) {
 
         <Button type="submit" disabled={isPending} className="w-full" size="lg">
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Proceed to Payment
+          {isPending ? 'Processing...' : (
+            <>
+              <CreditCard className="mr-2 h-4 w-4" />
+              Confirm & Pay GH₵{total.toFixed(2)}
+            </>
+          )}
         </Button>
       </form>
     </Form>
