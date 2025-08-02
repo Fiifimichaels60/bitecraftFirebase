@@ -165,6 +165,14 @@ export function CheckoutClientPage() {
         
         <div>
              <h3 className="text-xl font-headline font-semibold mb-4">Your Details</h3>
+             <div className="mb-4 p-4 bg-muted/50 rounded-lg">
+                 <p className="text-sm text-muted-foreground">
+                     <strong>Total Amount:</strong> GH₵{total.toFixed(2)}
+                 </p>
+                 <p className="text-sm text-muted-foreground mt-1">
+                     You will be redirected to Hubtel to complete your payment securely.
+                 </p>
+             </div>
             <CheckoutForm total={total} deliveryMethod={deliveryMethod} />
         </div>
     </>

@@ -45,18 +45,24 @@ export async function initiatePayment(paymentData: PaymentInitiationRequest): Pr
         return { success: false, message: errorMsg };
     }
 
+    const callbackUrl = process.env.HUBTEL_CALLBACK_URL || `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/hubtel-callback`;
+    const returnUrl = process.env.HUBTEL_RETURN_URL || `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/order-confirmation`;
+    const cancellationUrl = process.env.HUBTEL_CANCEL_URL || `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/checkout`;
+
     const payload = {
         totalAmount: paymentData.amount,
         description: paymentData.description,
-        callbackUrl: process.env.HUBTEL_CALLBACK_URL,
-        returnUrl: process.env.HUBTEL_RETURN_URL,
-        cancellationUrl: process.env.HUBTEL_CANCEL_URL,
+        callbackUrl,
+        returnUrl,
+        cancellationUrl,
         merchantAccountNumber: settings.merchantAccountNumber,
         clientReference: paymentData.clientReference,
         customerName: paymentData.customerName,
         customerMsisdn: normalizePhoneNumber(paymentData.mobileNumber),
         channel: paymentData.channel,
     };
+
+    console.log('Hubtel payment payload:', JSON.stringify(payload, null, 2));
 
     try {
         const response = await fetch(HUBTEL_API_URL, {
@@ -69,6 +75,8 @@ export async function initiatePayment(paymentData: PaymentInitiationRequest): Pr
         });
 
         const responseData = await response.json();
+        
+        console.log('Hubtel API response:', JSON.stringify(responseData, null, 2));
         
         if (!response.ok || (responseData.status && responseData.status !== "Success")) {
             console.error(`Hubtel API Error (${response.status}):`, responseData);

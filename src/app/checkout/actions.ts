@@ -44,6 +44,8 @@ export async function handleCheckout(prevState: any, formData: FormData) {
 
     const { name, email, phone, address, cartItems, total, deliveryMethod, channel } = validatedFields.data;
     
+    console.log('Processing checkout for:', { name, email, phone, total, channel });
+    
     await addVisitorIfNotExists({ name, phone, email });
 
     const items: CartItem[] = JSON.parse(cartItems);
@@ -62,7 +64,11 @@ export async function handleCheckout(prevState: any, formData: FormData) {
     }
     const orderId = await createOrder(orderData);
     
+    console.log('Order created with ID:', orderId);
+    
     await createPayment(orderId, total, 'Pending');
+    
+    console.log('Initiating Hubtel payment for order:', orderId);
     
     const paymentResponse = await initiatePayment({
       amount: total,
@@ -73,6 +79,8 @@ export async function handleCheckout(prevState: any, formData: FormData) {
       channel,
     });
 
+    console.log('Hubtel payment response:', paymentResponse);
+
     if (!paymentResponse.success || !paymentResponse.checkoutUrl) {
       console.error('Failed to initiate Hubtel payment:', paymentResponse.message);
       return {
@@ -80,6 +88,8 @@ export async function handleCheckout(prevState: any, formData: FormData) {
         error: true,
       }
     }
+
+    console.log('Redirecting to Hubtel checkout URL:', paymentResponse.checkoutUrl);
 
     revalidatePath('/admin/orders');
     revalidatePath('/admin/customers');
