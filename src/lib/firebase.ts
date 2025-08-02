@@ -4,7 +4,6 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import { seedDatabase } from "./data";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -26,21 +25,5 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
-
-// Connect to emulators in development
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  try {
-    connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
-    connectFirestoreEmulator(db, 'localhost', 8080);
-  } catch (error) {
-    // Emulators already connected
-  }
-}
-
-// Attempt to seed the database
-if (typeof window === 'undefined') { // Run only on the server
-    seedDatabase().catch(console.error);
-}
-
 
 export { app, auth, db, storage };
