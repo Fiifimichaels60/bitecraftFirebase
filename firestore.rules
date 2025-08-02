@@ -1,0 +1,71 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions to check for admin status
+    function isAdmin() {
+      return request.auth.token.isAdmin == true;
+    }
+
+    // Settings can only be read and written by admins
+    match /settings/app {
+      allow read, write: if isAdmin();
+    }
+
+    // Categories and Menu Items are publically readable
+    // Only admins can write to them
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /menuItems/{menuItemId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Customers can be created by anyone during checkout
+    // Admins can read and write all customer data
+    // Users should only be able to read/write their own data in the future
+    match /customers/{customerId} {
+      allow read: if isAdmin() || request.auth.uid == customerId;
+      allow create: if true;
+      allow update, delete: if isAdmin();
+    }
+
+    // Orders can be created by anyone.
+    // Admins have full access.
+    match /orders/{orderId} {
+      allow read: if isAdmin();
+      allow create: if true;
+      allow update, delete: if isAdmin();
+    }
+
+    // Payments can be created by anyone during checkout.
+    // Admins have full access.
+    match /payments/{paymentId} {
+      allow read: if isAdmin();
+      allow create: if true;
+      allow update, delete: if isAdmin();
+    }
+
+    // Activity Logs are write-only for the application, and read-only for admins.
+    match /activityLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if true;
+      allow update, delete: if false; // Logs should be immutable
+    }
+
+    // Visitors can be created by anyone during checkout.
+    // Admins have full access.
+    match /visitors/{visitorId} {
+        allow read, create: if true;
+        allow update, delete: if isAdmin();
+    }
+
+    // Default deny all other requests
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
