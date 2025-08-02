@@ -14,12 +14,19 @@ import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { PromotionSuggestor } from '@/components/PromotionSuggestor';
 import { Separator } from '@/components/ui/separator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function MenuPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [menuItems, setMenuItems] = useState<FoodItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
@@ -57,7 +64,7 @@ export default function MenuPage() {
       );
     }
 
-    if (activeCategory) {
+    if (activeCategory && activeCategory !== 'all') {
       items = items.filter(item => item.category === activeCategory);
     }
     
@@ -95,40 +102,34 @@ export default function MenuPage() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
             </div>
-            <div className="flex items-center gap-2">
-                <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="icon" onClick={() => setViewMode('grid')}>
-                    <LayoutGrid className="h-5 w-5" />
-                    <span className="sr-only">Grid View</span>
-                </Button>
-                <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="icon" onClick={() => setViewMode('list')}>
-                    <List className="h-5 w-5" />
-                    <span className="sr-only">List View</span>
-                </Button>
+             <div className="flex items-center gap-4">
+                <Select value={activeCategory} onValueChange={setActiveCategory}>
+                    <SelectTrigger className="w-full md:w-[200px]">
+                        <SelectValue placeholder="Filter by category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Categories</SelectItem>
+                        {categories.map(category => (
+                            <SelectItem key={category.id} value={category.name}>
+                                {category.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <div className="flex items-center gap-2">
+                    <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="icon" onClick={() => setViewMode('grid')}>
+                        <LayoutGrid className="h-5 w-5" />
+                        <span className="sr-only">Grid View</span>
+                    </Button>
+                    <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="icon" onClick={() => setViewMode('list')}>
+                        <List className="h-5 w-5" />
+                        <span className="sr-only">List View</span>
+                    </Button>
+                </div>
             </div>
         </div>
       </div>
       
-      <div className="flex flex-wrap justify-center gap-2 mb-12">
-        <Button
-            variant={activeCategory === null ? 'default' : 'outline'}
-            onClick={() => setActiveCategory(null)}
-            className="rounded-full"
-        >
-            All Items
-        </Button>
-        {categories.map((category) => (
-            <Button
-                key={category.id}
-                variant={activeCategory === category.name ? 'default' : 'outline'}
-                onClick={() => setActiveCategory(category.name)}
-                className="rounded-full"
-            >
-                {category.name}
-            </Button>
-        ))}
-      </div>
-
-
       {filteredMenuItems.length > 0 ? (
         viewMode === 'grid' ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
