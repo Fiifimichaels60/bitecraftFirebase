@@ -48,11 +48,11 @@ export async function initiatePayment(paymentData: PaymentInitiationRequest): Pr
     console.log(`Using Hubtel Merchant Account: ${settings.merchantAccountNumber}`);
 
 
-    // Ensure environment variables are defined or fall back to a reasonable default.
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const callbackUrl = process.env.HUBTEL_CALLBACK_URL || `${baseUrl}/api/hubtel-callback`;
-    const returnUrl = process.env.HUBTEL_RETURN_URL || `${baseUrl}/order-confirmation`;
-    const cancellationUrl = process.env.HUBTEL_CANCEL_URL || `${baseUrl}/checkout`;
+    // Correctly determine the base URL
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nanafood-d8bef.web.app';
+    const callbackUrl = `${baseUrl}/api/hubtel-callback`;
+    const returnUrl = `${baseUrl}/order-confirmation`;
+    const cancellationUrl = `${baseUrl}/checkout`;
 
     const payload = {
         totalAmount: paymentData.amount,
