@@ -96,10 +96,11 @@ export function CheckoutForm({ total, deliveryMethod }: CheckoutFormProps) {
                 description: result.message,
             });
         } else if (result.checkoutUrl) {
-            // Redirect user to Hubtel's page to complete payment
+            // Clear cart before redirecting to Hubtel's page to complete payment
+            dispatch({ type: 'CLEAR_CART' });
             window.location.href = result.checkoutUrl;
         } else {
-            // Fallback for unexpected success case without URL
+            // This case should ideally not happen with Hubtel flow, but as a fallback.
             dispatch({ type: 'CLEAR_CART' });
             router.push('/order-confirmation');
         }

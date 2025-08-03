@@ -30,6 +30,7 @@ const checkoutSchema = z.object({
 });
 
 export async function handleCheckout(prevState: any, formData: FormData) {
+  console.log('--- Starting Checkout Process ---');
   try {
     const rawData = Object.fromEntries(formData.entries());
     const validatedFields = checkoutSchema.safeParse(rawData);
@@ -41,45 +42,46 @@ export async function handleCheckout(prevState: any, formData: FormData) {
             error: true,
         };
     }
+    console.log("Step 1: Form data validated successfully.");
 
     const { name, email, phone, address, cartItems, total, deliveryMethod, channel } = validatedFields.data;
     
-    console.log('Processing checkout for:', { name, email, phone, total, channel });
-    
     await addVisitorIfNotExists({ name, phone, email });
+    console.log('Step 2: Visitor record checked/created.');
 
     const items: CartItem[] = JSON.parse(cartItems);
     
     const customerId = await findOrCreateCustomer({ name, email, phone, location: address || 'Self-pickup' });
+    console.log(`Step 3: Customer found or created with ID: ${customerId}`);
+
+    const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    const deliveryFee = deliveryMethod === 'delivery' ? (total - subtotal) : 0;
 
     const orderData = {
       customerId,
       items,
       total,
-      subtotal: items.reduce((acc, item) => acc + item.price * item.quantity, 0),
-      deliveryFee: deliveryMethod === 'delivery' ? (total - items.reduce((acc, item) => acc + item.price * item.quantity, 0)) : 0,
-      status: 'Pending',
+      subtotal,
+      deliveryFee,
+      status: 'Pending' as const,
       deliveryMethod,
       channel,
     }
     const orderId = await createOrder(orderData);
-    
-    console.log('Order created with ID:', orderId);
+    console.log(`Step 4: Order created with ID: ${orderId}`);
     
     await createPayment(orderId, total, 'Pending');
+    console.log(`Step 5: Initial payment record created for order ${orderId}.`);
     
-    console.log('Initiating Hubtel payment for order:', orderId);
-    
+    console.log(`Step 6: Initiating Hubtel payment for order ${orderId}...`);
     const paymentResponse = await initiatePayment({
       amount: total,
-      description: `Payment for order #${orderId}`,
+      description: `Payment for Bite Craft Order #${orderId}`,
       clientReference: orderId,
       customerName: name,
       mobileNumber: phone,
       channel,
     });
-
-    console.log('Hubtel payment response:', paymentResponse);
 
     if (!paymentResponse.success || !paymentResponse.checkoutUrl) {
       console.error('Failed to initiate Hubtel payment:', paymentResponse.message);
@@ -88,13 +90,13 @@ export async function handleCheckout(prevState: any, formData: FormData) {
         error: true,
       }
     }
-
-    console.log('Redirecting to Hubtel checkout URL:', paymentResponse.checkoutUrl);
+    console.log('Step 7: Hubtel payment initiated. Redirecting user...');
 
     revalidatePath('/admin/orders');
     revalidatePath('/admin/customers');
     revalidatePath('/admin/payments');
     revalidatePath('/admin');
+    console.log('--- Checkout Process Successful ---');
 
     return {
         message: 'Payment initiated successfully!',
