@@ -1,14 +1,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import * as crypto from 'crypto';
-import { getSettingsForServer } from '@/services/settingsService';
 import { updateOrderStatus } from '@/services/orderService';
 import { updatePaymentStatusByOrderId } from '@/services/paymentService';
 
 export async function POST(req: NextRequest) {
     console.log('Received Paystack webhook...');
-    const settings = await getSettingsForServer();
-    const secret = settings.paystackSecretKey;
+    const secret = 'sk_live_84b49fd51b2618609e93f0f3d99203b9a23f435c';
     
     if (!secret) {
         console.error('Paystack secret key is not configured.');

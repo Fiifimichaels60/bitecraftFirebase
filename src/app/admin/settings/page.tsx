@@ -11,7 +11,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GeneralSettingsForm } from './GeneralSettingsForm';
 import { AppearanceSettingsForm } from './AppearanceSettingsForm';
-import { PaymentSettingsForm } from './PaymentSettingsForm';
 import { CreateAdminForm } from './CreateAdminForm';
 
 export default function SettingsPage() {
@@ -24,10 +23,9 @@ export default function SettingsPage() {
           </p>
       </div>
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 max-w-lg">
+        <TabsList className="grid w-full grid-cols-3 max-w-lg">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
-          <TabsTrigger value="payments">Payments</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
         </TabsList>
         <TabsContent value="general">
@@ -53,19 +51,6 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-2">
               <AppearanceSettingsForm />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="payments">
-          <Card>
-            <CardHeader>
-              <CardTitle>Payment Gateway</CardTitle>
-              <CardDescription>
-                Configure your payment gateway settings for Paystack.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-                <PaymentSettingsForm />
             </CardContent>
           </Card>
         </TabsContent>

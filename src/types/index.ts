@@ -63,8 +63,6 @@ export interface AppSettings {
     deliveryFee: number;
     primaryColor: string;
     accentColor: string;
-    paystackSecretKey: string;
-    paystackPublicKey: string;
     sidebarColor: string;
     sidebarAccentColor: string;
     sidebarPosition: 'left' | 'right';

@@ -1,8 +1,6 @@
 
 'use server'
 
-import { getSettingsForServer } from "./settingsService";
-
 const PAYSTACK_API_URL = 'https://api.paystack.co';
 
 interface PaymentInitiationRequest {
@@ -15,11 +13,10 @@ interface PaymentInitiationRequest {
 export async function initiatePayment(paymentData: PaymentInitiationRequest): Promise<any> {
     console.log(`Initiating Paystack payment for order: ${paymentData.reference}`);
 
-    const settings = await getSettingsForServer();
-    const secretKey = settings.paystackSecretKey;
+    const secretKey = 'sk_live_84b49fd51b2618609e93f0f3d99203b9a23f435c';
 
     if (!secretKey) {
-        const errorMsg = 'Paystack Secret Key is not configured in settings.';
+        const errorMsg = 'Paystack Secret Key is not configured.';
         console.error(errorMsg);
         return { status: false, message: errorMsg };
     }

@@ -22,8 +22,6 @@ export async function getSettingsForServer(): Promise<AppSettings> {
             deliveryFee: data?.deliveryFee ?? 0,
             primaryColor: data?.primaryColor ?? '25 87% 54%',
             accentColor: data?.accentColor ?? '39 100% 60%',
-            paystackSecretKey: data?.paystackSecretKey ?? '',
-            paystackPublicKey: data?.paystackPublicKey ?? '',
             sidebarColor: data?.sidebarColor ?? '240 10% 3.9%',
             sidebarAccentColor: data?.sidebarAccentColor ?? '25 87% 54%',
             sidebarPosition: data?.sidebarPosition ?? 'left',
@@ -50,8 +48,6 @@ export async function getSettings(): Promise<AppSettings> {
         deliveryFee: data.deliveryFee ?? 0,
         primaryColor: data.primaryColor ?? '25 87% 54%',
         accentColor: data.accentColor ?? '39 100% 60%',
-        paystackSecretKey: data.paystackSecretKey ?? '',
-        paystackPublicKey: data.paystackPublicKey ?? '',
         sidebarColor: data.sidebarColor ?? '240 10% 3.9%',
         sidebarAccentColor: data.sidebarAccentColor ?? '25 87% 54%',
         sidebarPosition: data.sidebarPosition ?? 'left',
@@ -69,7 +65,7 @@ export async function getSettings(): Promise<AppSettings> {
  * Creates the document if it doesn't exist.
  * Logs the fields that were updated.
  */
-export async function updateSettings(settings: Partial<AppSettings>, adminEmail?: string): Promise<void> {
+export async function updateSettings(settings: Partial<Omit<AppSettings, 'paystackSecretKey' | 'paystackPublicKey'>>, adminEmail?: string): Promise<void> {
   try {
     const docSnap = await getDoc(settingsDocRef);
 
