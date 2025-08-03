@@ -2,72 +2,72 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Helper function to check for admin privileges
+    
+    // Helper function to check for Admin custom claim
     function isAdmin() {
       return request.auth != null && request.auth.token.isAdmin == true;
     }
 
-    // Public Collections
-    match /menuItems/{menuItemId} {
-      allow read: if true;
-      allow write: if isAdmin();
+    // Activity Logs: Only admins can read. Writes are server-side via Admin SDK.
+    match /activityLogs/{logId} {
+      allow read, write: if isAdmin();
     }
 
+    // Categories: Public can read, Admins can create/update/delete.
     match /categories/{categoryId} {
       allow read: if true;
       allow write: if isAdmin();
     }
-
-    match /visitors/{visitorId} {
-      // Anyone can create a visitor record (on checkout start) or check for an existing one.
-      allow read, create: if true;
-      allow update, delete: if isAdmin();
-    }
-
+    
+    // Customers: Public can create. Admins can read/update.
+    // Users cannot read other users' data.
     match /customers/{customerId} {
-        // Anyone can create a customer record or check for an existing one.
-        allow read, create: if true;
-        allow update, delete: if isAdmin();
+        allow create: if true;
+        allow read, update, delete: if isAdmin();
     }
 
-    match /orders/{orderId} {
-      // Anyone can create an order.
-      allow create: if true;
-      // Only admins can view, update, or delete orders.
-      allow read, update, delete: if isAdmin();
+    // Menu Items: Public can read. Admins can write.
+    match /menuItems/{itemId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
-
-    match /payments/{paymentId} {
-      // Anyone can create a payment record.
-      allow create: if true;
-      // Only admins can read, update, or delete payments.
-      allow read, update, delete: if isAdmin();
-    }
-
+    
+    // Messages: Public can create. Admins can read/update/delete.
     match /messages/{messageId} {
-      // Anyone can send a message.
-      allow create: if true;
-      // Only admins can read or delete them.
-      allow read, update, delete: if isAdmin();
+        allow create: if true;
+        allow read, update, delete: if isAdmin();
     }
     
+    // Orders: Public can create. Admins can read/update.
+    // Users cannot read other users' orders.
+    match /orders/{orderId} {
+        allow create: if true;
+        allow read, update, delete: if isAdmin();
+    }
+    
+    // Payments: Public can create. Admins can read/update.
+    // Users cannot read other users' payments.
+    match /payments/{paymentId} {
+        allow create: if true;
+        allow read, update, delete: if isAdmin();
+    }
+    
+    // Ratings: Public can create. Admins can read/delete.
     match /ratings/{ratingId} {
-      // Anyone can submit a rating.
-      allow create: if true;
-      // Only admins can read or delete them.
-      allow read, update, delete: if isAdmin();
+        allow create: if true;
+        allow read, delete: if isAdmin();
     }
 
-    // Settings
+    // Settings: Public can read. Admins can write.
     match /settings/app {
-        allow read: if true;
-        allow write: if isAdmin();
+      allow read: if true;
+      allow write: if isAdmin();
     }
     
-    // Activity Logs - Only accessible by admins
-    match /activityLogs/{logId} {
-      allow read, write: if isAdmin();
+    // Visitors: Public can create. Admins can read/delete.
+    match /visitors/{visitorId} {
+      allow create: if true;
+      allow read, delete: if isAdmin();
     }
   }
 }
