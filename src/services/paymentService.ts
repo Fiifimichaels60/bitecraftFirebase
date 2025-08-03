@@ -19,12 +19,12 @@ export async function getPayments(): Promise<Payment[]> {
     });
 }
 
-export async function createPayment(orderId: string, amount: number, status: Payment['status']): Promise<string> {
+export async function createPayment(orderId: string, amount: number, status: Payment['status'], gateway: Payment['gateway']): Promise<string> {
     const docRef = await addDoc(paymentsCollection, {
         orderId,
         amount,
         status,
-        gateway: 'Hubtel',
+        gateway,
         transactionId: null,
         createdAt: serverTimestamp(),
     });

@@ -37,7 +37,6 @@ export type Order = {
     status: 'Pending' | 'Processing' | 'Completed' | 'Cancelled';
     deliveryMethod: 'delivery' | 'pickup';
     createdAt: Date;
-    channel: string;
     customerDetails?: {
         name: string;
         email: string;
@@ -49,7 +48,7 @@ export type Payment = {
     orderId: string;
     amount: number;
     status: 'Succeeded' | 'Failed' | 'Pending';
-    gateway: 'Hubtel';
+    gateway: 'Paystack';
     transactionId?: string;
     createdAt: Date;
 }
@@ -64,9 +63,8 @@ export interface AppSettings {
     deliveryFee: number;
     primaryColor: string;
     accentColor: string;
-    hubtelClientId: string;
-    hubtelClientSecret: string;
-    merchantAccountNumber: string;
+    paystackSecretKey: string;
+    paystackPublicKey: string;
     sidebarColor: string;
     sidebarAccentColor: string;
     sidebarPosition: 'left' | 'right';

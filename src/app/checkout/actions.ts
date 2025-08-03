@@ -7,7 +7,7 @@ import { createOrder } from '@/services/orderService';
 import { createPayment } from '@/services/paymentService';
 import { revalidatePath } from 'next/cache';
 import type { CartItem } from '@/types';
-import { initiatePayment } from '@/services/hubtelService';
+import { initiatePayment } from '@/services/paystackService';
 import { addVisitorIfNotExists } from '@/services/visitorService';
 
 const checkoutSchema = z.object({
@@ -18,7 +18,6 @@ const checkoutSchema = z.object({
   cartItems: z.string(), // JSON string of cart items
   total: z.coerce.number(),
   deliveryMethod: z.enum(['delivery', 'pickup']),
-  channel: z.string().min(1, 'Payment channel is required.'),
 }).refine(data => {
     if (data.deliveryMethod === 'delivery') {
         return !!data.address && data.address.length >= 5;
@@ -44,7 +43,7 @@ export async function handleCheckout(prevState: any, formData: FormData) {
     }
     console.log("Step 1: Form data validated successfully.");
 
-    const { name, email, phone, address, cartItems, total, deliveryMethod, channel } = validatedFields.data;
+    const { name, email, phone, address, cartItems, total, deliveryMethod } = validatedFields.data;
     
     await addVisitorIfNotExists({ name, phone, email });
     console.log('Step 2: Visitor record checked/created.');
@@ -65,32 +64,33 @@ export async function handleCheckout(prevState: any, formData: FormData) {
       deliveryFee,
       status: 'Pending' as const,
       deliveryMethod,
-      channel,
     }
     const orderId = await createOrder(orderData);
     console.log(`Step 4: Order created with ID: ${orderId}`);
     
-    await createPayment(orderId, total, 'Pending');
+    await createPayment(orderId, total, 'Pending', 'Paystack');
     console.log(`Step 5: Initial payment record created for order ${orderId}.`);
     
-    console.log(`Step 6: Initiating Hubtel payment for order ${orderId}...`);
+    console.log(`Step 6: Initiating Paystack payment for order ${orderId}...`);
     const paymentResponse = await initiatePayment({
-      amount: total,
-      description: `Payment for Bite Craft Order #${orderId}`,
-      clientReference: orderId,
-      customerName: name,
-      mobileNumber: phone,
-      channel,
+      amount: total * 100, // Paystack expects amount in kobo/pesewas
+      email: email,
+      reference: orderId,
+      metadata: {
+        orderId: orderId,
+        customerName: name,
+        phone: phone,
+      }
     });
 
-    if (!paymentResponse.success || !paymentResponse.checkoutUrl) {
-      console.error('Failed to initiate Hubtel payment:', paymentResponse.message);
+    if (!paymentResponse.status || !paymentResponse.data.authorization_url) {
+      console.error('Failed to initiate Paystack payment:', paymentResponse.message);
       return {
-        message: paymentResponse.message || 'Could not initiate payment with Hubtel.',
+        message: paymentResponse.message || 'Could not initiate payment with Paystack.',
         error: true,
       }
     }
-    console.log('Step 7: Hubtel payment initiated. Redirecting user...');
+    console.log('Step 7: Paystack payment initiated. Redirecting user...');
 
     revalidatePath('/admin/orders');
     revalidatePath('/admin/customers');
@@ -101,7 +101,7 @@ export async function handleCheckout(prevState: any, formData: FormData) {
     return {
         message: 'Payment initiated successfully!',
         error: false,
-        checkoutUrl: paymentResponse.checkoutUrl,
+        checkoutUrl: paymentResponse.data.authorization_url,
     }
 
   } catch (error) {

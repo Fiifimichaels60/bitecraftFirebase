@@ -48,5 +48,5 @@ export async function createOrder(orderData: Omit<Order, 'id' | 'createdAt' | 'c
 export async function updateOrderStatus(orderId: string, status: Order['status']): Promise<void> {
     const orderDoc = doc(db, 'orders', orderId);
     await updateDoc(orderDoc, { status });
-    await logActivity('admin_action', `Order ${orderId} status updated to ${status} via Hubtel callback.`);
+    await logActivity('admin_action', `Order ${orderId} status updated to ${status} via webhook.`);
 }

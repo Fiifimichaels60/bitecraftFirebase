@@ -21,9 +21,8 @@ import { toast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
 const paymentSchema = z.object({
-  hubtelClientId: z.string().min(1, 'Client ID is required.'),
-  hubtelClientSecret: z.string().min(1, 'Client Secret is required.'),
-  merchantAccountNumber: z.string().min(1, 'Merchant Account Number is required.'),
+  paystackPublicKey: z.string().min(1, 'Public Key is required.'),
+  paystackSecretKey: z.string().min(1, 'Secret Key is required.'),
 });
 
 type PaymentFormValues = z.infer<typeof paymentSchema>;
@@ -36,9 +35,8 @@ export function PaymentSettingsForm() {
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
-      hubtelClientId: '',
-      hubtelClientSecret: '',
-      merchantAccountNumber: '',
+      paystackPublicKey: '',
+      paystackSecretKey: '',
     },
   });
 
@@ -48,9 +46,8 @@ export function PaymentSettingsForm() {
       try {
         const settings = await getSettings();
         form.reset({
-          hubtelClientId: settings.hubtelClientId || '',
-          hubtelClientSecret: settings.hubtelClientSecret || '',
-          merchantAccountNumber: settings.merchantAccountNumber || '',
+          paystackPublicKey: settings.paystackPublicKey || '',
+          paystackSecretKey: settings.paystackSecretKey || '',
         });
       } catch (error) {
         console.error("Failed to fetch settings:", error);
@@ -67,7 +64,7 @@ export function PaymentSettingsForm() {
       await updateSettings(data);
       toast({
         title: 'Payment Settings Updated',
-        description: 'Your Hubtel API keys have been saved.',
+        description: 'Your Paystack API keys have been saved.',
       });
     } catch (error) {
       console.error(error);
@@ -95,12 +92,12 @@ export function PaymentSettingsForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-md">
         <FormField
           control={form.control}
-          name="merchantAccountNumber"
+          name="paystackPublicKey"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Hubtel Merchant Account Number</FormLabel>
+              <FormLabel>Paystack Public Key</FormLabel>
               <FormControl>
-                <Input placeholder="Your Hubtel account number" {...field} />
+                <Input placeholder="pk_live_..." {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -108,28 +105,15 @@ export function PaymentSettingsForm() {
         />
         <FormField
           control={form.control}
-          name="hubtelClientId"
+          name="paystackSecretKey"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Hubtel Client ID</FormLabel>
-              <FormControl>
-                <Input placeholder="Your Hubtel Client ID" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="hubtelClientSecret"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Hubtel Client Secret</FormLabel>
+              <FormLabel>Paystack Secret Key</FormLabel>
               <div className="relative">
                 <FormControl>
                   <Input
                     type={showSecret ? 'text' : 'password'}
-                    placeholder="Your Hubtel Client Secret"
+                    placeholder="sk_live_..."
                     {...field}
                   />
                 </FormControl>
@@ -149,8 +133,8 @@ export function PaymentSettingsForm() {
         />
         <div className="text-sm text-muted-foreground">
             Find your API keys on the{' '}
-            <Link href="https://explore.hubtel.com/developers/" target="_blank" className="text-primary underline">
-                Hubtel Developer portal
+            <Link href="https://dashboard.paystack.com/#/settings/developers" target="_blank" className="text-primary underline">
+                Paystack Developer settings
             </Link>.
         </div>
         <Button type="submit" disabled={isLoading}>

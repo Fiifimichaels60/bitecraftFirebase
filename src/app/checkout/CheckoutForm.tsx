@@ -21,13 +21,6 @@ import { useCart } from '@/contexts/CartProvider';
 import { toast } from '@/hooks/use-toast';
 import { handleCheckout } from './actions';
 import { Loader2, CreditCard } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 
 const checkoutSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -35,7 +28,6 @@ const checkoutSchema = z.object({
   email: z.string().email('Please enter a valid email address.'),
   address: z.string().optional(),
   deliveryMethod: z.enum(['delivery', 'pickup']),
-  channel: z.string({ required_error: 'Please select a payment channel.' }),
 }).refine(data => {
     if (data.deliveryMethod === 'delivery') {
         return !!data.address && data.address.length >= 5;
@@ -68,7 +60,6 @@ export function CheckoutForm({ total, deliveryMethod }: CheckoutFormProps) {
       email: '',
       address: '',
       deliveryMethod: deliveryMethod,
-      channel: '',
     },
   });
 
@@ -96,11 +87,11 @@ export function CheckoutForm({ total, deliveryMethod }: CheckoutFormProps) {
                 description: result.message,
             });
         } else if (result.checkoutUrl) {
-            // Clear cart before redirecting to Hubtel's page to complete payment
+            // Clear cart before redirecting to Paystack's page to complete payment
             dispatch({ type: 'CLEAR_CART' });
             window.location.href = result.checkoutUrl;
         } else {
-            // This case should ideally not happen with Hubtel flow, but as a fallback.
+            // This case should ideally not happen with Paystack flow, but as a fallback.
             dispatch({ type: 'CLEAR_CART' });
             router.push('/order-confirmation');
         }
@@ -165,29 +156,6 @@ export function CheckoutForm({ total, deliveryMethod }: CheckoutFormProps) {
           />
         )}
         
-        <FormField
-          control={form.control}
-          name="channel"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Payment Channel</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a payment method" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="mtn-gh">MTN Mobile Money</SelectItem>
-                  <SelectItem value="vodafone-gh">Vodafone Cash</SelectItem>
-                  <SelectItem value="airteltigo-gh">AirtelTigo Money</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
         <Button type="submit" disabled={isPending} className="w-full" size="lg">
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isPending ? 'Processing...' : (

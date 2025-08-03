@@ -61,7 +61,7 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle>Payment Gateway</CardTitle>
               <CardDescription>
-                Configure your payment gateway settings for Hubtel.
+                Configure your payment gateway settings for Paystack.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
